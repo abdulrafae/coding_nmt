@@ -46,11 +46,11 @@ bash apply_bpe.sh fr mt en
 ## Train NMT System
 Train French+Metaphone-English Concatenation Model
 ```
-bash train_fconv.sh
+bash train_concatenation.sh
 ```
 or
 
 Train French+Metaphone-English Multisource Model
 ```
-bash train_xfmr.sh
+bash train_multisource.sh
 ```
