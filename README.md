@@ -32,9 +32,9 @@ Download and tokenize data
 bash prepare_data.sh
 ```
 
-Create Metaphone encoded data
+Create Metaphone coded data
 ```
-python phonetic_encoding.py --source fr --target en --input data/ --output data/ --phonetic metaphone --siles train,valid,test
+python phonetic_encoding.py --source fr --target en --input data/ --output data/ --phonetic metaphone --files train,valid,test
 Use --phonetic metaphone,nysiis,soundex for multiple coding
 ```
 
