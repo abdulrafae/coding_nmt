@@ -99,3 +99,18 @@ mv $OUTPATH/train.enny.pth $OUTPATH/train.en-ny.pth
 mv $OUTPATH/valid.enny.pth $OUTPATH/valid.en-ny.pth
 mv $OUTPATH/test.enny.pth $OUTPATH/test.en-ny.pth
 ```
+
+Train English baseline
+```
+CUDA_VISIBLE_DEVICES=0 python train.py --exp_name xlm_en --dump_path ./dumped_xlm_en --data_path $OUTPATH --lgs 'en' --clm_steps '' --mlm_steps 'en' --emb_dim 256 --n_layers 6 --n_heads 8 --dropout 0.1 --attention_dropout 0.1 --gelu_activation true --batch_size 32 --bptt 256 --optimizer adam_inverse_sqrt,lr=0.00010,warmup_updates=30000,beta1=0.9,beta2=0.999,weight_decay=0.01,eps=0.000001 --epoch_size 300000 --max_epoch 100000 --validation_metrics _valid_en_mlm_ppl --stopping_criterion _valid_en_mlm_ppl,25 --fp16 true --word_mask_keep_rand '0.8,0.1,0.1' --word_pred '0.15' 
+```
+
+Train English+NYSIIS
+```
+CUDA_VISIBLE_DEVICES=0 python train.py --exp_name xlm_en_ny --dump_path ./dumped_xlm_en_ny --data_path $OUTPATH --lgs 'en' --clm_steps '' --mlm_steps 'en,ny' --emb_dim 256 --n_layers 6 --n_heads 8 --dropout 0.1 --attention_dropout 0.1 --gelu_activation true --batch_size 32 --bptt 256 --optimizer adam_inverse_sqrt,lr=0.00010,warmup_updates=30000,beta1=0.9,beta2=0.999,weight_decay=0.01,eps=0.000001 --epoch_size 300000 --max_epoch 100000 --validation_metrics _valid_en_mlm_ppl --stopping_criterion _valid_en_mlm_ppl,25 --fp16 true --word_mask_keep_rand '0.8,0.1,0.1' --word_pred '0.15' 
+```
+
+Train English+NYSIIS+Word Alignment
+```
+CUDA_VISIBLE_DEVICES=0 python train.py --exp_name mlm_en_ny --dump_path ./dumped_mlm_en_ny --data_path $OUTPATH --lgs 'en' --clm_steps '' --mlm_steps 'en,ny,en-ny' --emb_dim 256 --n_layers 6 --n_heads 8 --dropout 0.1 --attention_dropout 0.1 --gelu_activation true --batch_size 32 --bptt 256 --optimizer adam_inverse_sqrt,lr=0.00010,warmup_updates=30000,beta1=0.9,beta2=0.999,weight_decay=0.01,eps=0.000001 --epoch_size 300000 --max_epoch 100000 --validation_metrics _valid_en_mlm_ppl --stopping_criterion _valid_en_mlm_ppl,25 --fp16 true --word_mask_keep_rand '0.8,0.1,0.1' --word_pred '0.15' 
+```
