@@ -1,5 +1,7 @@
 # Coding Textual Inputs Boosts the Accuracy of Neural Networks
-Abdul Rafae Khan, Jia Xu & Weiwei Sun
+Abdul Rafae Khan<sup>*</sup>, Jia Xu<sup>*</sup> & Weiwei Sun<sup>+</sup>
+* Stevens Institute of Technology
++ Cambridge University
 
 ## (1) Coding Neural Machine Translation (NMT)
 
