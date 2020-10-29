@@ -1,28 +1,40 @@
 #!/usr/bin/env bash
 
-MOSESROOT=mosedecoder/scripts
-TOKENIZER=$MOSESROOT/tokenizer/tokenizer.perl
-TCROOT=$MOSESROOT/recaser/
-CLEAN=$MOSESROOT/training/clean-corpus-n.perl
+#Uncomment to install required packages
+#pip install fairseq
+#pip install sacrebleu
+
+echo 'Cloning Moses github repository (for tokenization scripts)...'
+git clone https://github.com/moses-smt/mosesdecoder.git
+
+echo 'Cloning Subword NMT repository (for BPE pre-processing)...'
+git clone https://github.com/rsennrich/subword-nmt.git
+
+SCRIPTS=mosesdecoder/scripts
+TOKENIZER=$SCRIPTS/tokenizer/tokenizer.perl
+TCROOT=$SCRIPTS/recaser/
+CLEAN=$SCRIPTS/training/clean-corpus-n.perl
+BPEROOT=subword-nmt/subword_nmt
+BPE_TOKENS=16000
 
 URL="https://wit3.fbk.eu/archive/2017-01-trnted/texts/fr/en/fr-en.tgz"
 GZ=fr-en.tgz
 
-if [ ! -d "$MOSESROOT" ]; then
-    echo "Please set MOSESROOT variable correctly to point to Moses scripts."
+if [ ! -d "$SCRIPTS" ]; then
+    echo "Please set SCRIPTS variable correctly to point to Moses scripts."
     exit
 fi
 
 SRC=fr
 TRG=en
 LANG=fr-en
-PREP=$DATA_ROOT
+PREP=iwslt17.tokenized.fr-en
 TMP=$PREP/tmp
 ORIG=orig
 
 mkdir -p $ORIG $TMP $PREP
 
-# Download IWSLT'17 French-English Parallel Data 
+#(1) Download Parallel Data 
 echo "Downloading data from ${URL}..."
 cd $ORIG
 wget "$URL"
@@ -37,7 +49,8 @@ fi
 tar zxvf $GZ
 cd ..
 
-# Extract Raw Data and tokenize
+#(2) Extract Raw Data
+#(3) Tokenize Data
 echo "pre-processing train data..."
 for L in $SRC $TRG
  do
@@ -83,7 +96,7 @@ for L in $SRC $TRG
     done
 done
 
-echo "Creating valid file"
+echo "Creating train, valid, test"
 for L in $SRC $TRG
  do
 
@@ -98,11 +111,11 @@ for L in $SRC $TRG
 	
 done
 
-# Clean Data
+#(4) Clean Data
 echo "cleaning train data..."
 perl $CLEAN -ratio 1.5 $TMP/train.tags.$LANG.tok $SRC $TRG $TMP/train.tok.clean 1 175
 
-# Truecase Data
+#(4) Truecase Data
 perl $TCROOT/train-truecaser.perl -corpus $TMP/train.tok.clean.$SRC -model $PREP/truecase-model.$SRC
 perl $TCROOT/train-truecaser.perl -corpus $TMP/train.tok.clean.$TRG -model $PREP/truecase-model.$TRG
 
@@ -118,6 +131,27 @@ for L in $SRC $TRG
 	$TCROOT/truecase.perl -model $PREP/truecase-model.$L < $TMP/valid.tok.$L > $TMP/valid.tc.$L
 done
 
+#(5) Byte Pair Encoding
+TRAIN=$TMP/train.en-fr
+BPE_CODE=$PREP/code
+rm -f $TRAIN
+for L in $SRC $TRG
+ do
+    cat $TMP/train.tc.$L >> $TRAIN
+done
+
+echo "learn_bpe.py on ${TRAIN}"
+python $BPEROOT/learn_bpe.py -s $BPE_TOKENS < $TRAIN > $BPE_CODE
+
+for L in $SRC $TRG
+ do
+    for F in train valid
+     do
+        echo "apply_bpe.py on ${F}"
+        python $BPEROOT/apply_bpe.py -c $BPE_CODE < $TMP/$F.tc.$L > $PREP/$F.$L
+    done
+done
+
 echo "Download test.$SRC"
 sacrebleu --test-set iwslt17 --language-pair ${SRC}-${TRG} --echo src > $TMP/test.$SRC
 
@@ -127,15 +161,8 @@ cat $TMP/test.$SRC | $TOKENIZER -threads 8 -a -l ${SRC} > $TMP/test.tok.$SRC
 echo "Truecase test.$SRC"
 $TCROOT/truecase.perl -model $PREP/truecase-model.$SRC < $TMP/test.tok.$SRC > $TMP/test.tc.$SRC
 
-for F in train valid
- do
-	for L in $SRC $TRG 
-	 do
-		cp $TMP/$F.tc.$L $PREP/$F.$L
-	done 
-done
+echo "Apply bpe on test.$SRC"
+python $BPEROOT/apply_bpe.py -c $BPE_CODE < $TMP/test.tc.$SRC > $PREP/test.$SRC
 
-cp $TMP/test.tc.$SRC $PREP/test.$SRC
-
-# Removing temporary directory
+echo "Removing temporary directory"
 rm -rf $TMP
