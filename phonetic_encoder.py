@@ -21,7 +21,7 @@ output_path = args.output+"/"
 filenames = args.files.split(',')
 codings = args.coding.split(',')
 
-config = {'metaphone':('mt',jellyfish.metaphone),'nysiis':('ny',jellyfish.nysiis),'soundex':('sx',jellyfish.soundex), 'fixedlen':(fixed_len),'huffman':(huffman)}
+config = {'metaphone':('mt',jellyfish.metaphone),'nysiis':('ny',jellyfish.nysiis),'soundex':('sx',jellyfish.soundex)}
 
 def create_fixed_len_vocab(data,limit):
 
