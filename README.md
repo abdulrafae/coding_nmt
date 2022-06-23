@@ -41,8 +41,8 @@ bash prepare_data.sh
 
 Create Metaphone coded data
 ```
-python generate_codings.py --source fr --target en --input data/ --output data/ --phonetic metaphone --files train,valid,test
-Use --phonetic metaphone,nysiis,soundex for multiple coding
+python phonetic_encoder.py --source fr --target en --input data/ --output data/ --coding metaphone --files train,valid,test
+Use --coding metaphone,nysiis,soundex for multiple coding
 ```
 
 Byte-pair encode the data
