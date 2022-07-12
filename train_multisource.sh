@@ -34,7 +34,7 @@ python $FAIRSEQROOT/preprocess.py \
 --trainpref $TEXT/train.bpe \
 --validpref $TEXT/valid.bpe \
 --destdir $DATA_BIN \
---workers 10 | tee $LOG_DIR/prepro_$PHONETICSRC.out
+--workers 10 --tgtdict $DATA_BIN/dict.$TRG.txt | tee $LOG_DIR/prepro_$PHONETICSRC.out
 
 
 # Train a multilingual transformer model
